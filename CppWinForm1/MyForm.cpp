@@ -2,36 +2,72 @@
 #include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
+#include <string>
+#include <fstream>
 
 using namespace System;
 using namespace System::Windows::Forms;
 
-struct base_condominium {
-	//Область данных
-	int n_room;
-	int floor;
-	int area;
-	char address[40];
-	//ссылка на следующий элемент
-	base_condominium *next;
+struct KARTA // Хата
+{
+	String ^nomer();
+	String ^etag();
+	String ^procent();
+	String ^adres();
 };
 
-typedef base_condominium *p_node;
 
-// создаем новый элемент списка
-p_node create_node() {
+struct STR
+{
+	KARTA *Karta;
+	STR *next;
+};
 
-	p_node new_node = (p_node)malloc(sizeof(base_condominium)); //указатель на новый узел
-	printf("\nWrite address: ");
-	scanf("%s", &new_node->address);
-	printf("\nWrite area: ");
-	scanf("%d", &new_node->area);
-	printf("\nWrite floor: ");
-	scanf("%d", &new_node->floor);
-	printf("\nWrite number room: ");
-	scanf("%d", &new_node->n_room);
-	new_node->next = NULL; // следующего узла нет
-	return (new_node);
+STR * create(KARTA * Karta) //начальное формирование списка
+{
+	STR *r = new STR;
+	r->Karta = Karta;
+	r->next = NULL;
+	return r;
+}
+
+void add(KARTA *Karta, STR* r) //добавление нового элемента списка
+{
+	while (r->next)
+		r = r->next;
+	r->next = new STR;
+	r->next->Karta = Karta;
+	r->next->next = NULL;
+}
+
+void vyvodKARTA(KARTA *Karta) //вывод на экран
+{
+	/*
+	cout << "Количество комнат: " << Karta->nomer << endl;
+	cout << "Этаж: " << Karta->etag << endl;
+	cout << "Площадь: " << Karta->procent << endl;
+	cout << "Адрес:" << Karta->adres << endl;
+	cout << endl;
+	*/
+}
+
+KARTA *dobavlenieKarta(String ^Etag, String ^Procent, String ^Addres, String ^Nomer)
+{
+	KARTA *Karta = new KARTA;
+
+	/*Karta->etag = Etag;
+	Karta->procent = Procent;
+	Karta->adres = Addres;
+	Karta->nomer = Nomer;*/
+	std::ofstream file("test.txt");
+	/*file << *Karta->etag;
+	file << *Karta->procent;
+	file << *Karta->adres;
+	file << *Karta->nomer;*/
+	file << "huy xyй";
+	file.close();
+	
+	return Karta;
 }
 
 [STAThread]
