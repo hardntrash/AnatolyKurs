@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "msclr\marshal_cppstd.h"
 #include <fstream>
+#include <vector>
 
 struct Kvartira
 {
@@ -47,15 +48,31 @@ Kvartira *dobavlenieKv(int _komnat, int _etag, double _ploshad, std::string _add
 	return Karta;
 }
 
-void safeInFile(Kvartira *Karta)
+void safeInFile(Kvartira *Karta, int _nomer)
 {
 	std::ofstream f("test.txt", std::ios::app);
+	f << "Заявка №" << _nomer << '\n';
 	f << Karta->addres << '\n';
 	f << Karta->etag << '\n';
 	f << Karta->ploshad << '\n';
 	f << Karta->komnat << '\n';
 	f << "/" << '\n';
 	f.close();
+}
+
+std::vector<std::string> showAll()
+{
+	std::string a;
+	std::vector<std::string> listKv;
+	std::ifstream f("test.txt");
+	while (getline(f,a))
+	{
+		if (a != "/")
+			listKv.insert(listKv.end(), a);
+		listKv.insert(listKv.end(), "\n");
+	}
+	f.close();
+	return listKv;
 }
 
 namespace CppWinForm1 {
@@ -104,6 +121,8 @@ namespace CppWinForm1 {
 	private: System::Windows::Forms::Label^  label3;
 	private: System::Windows::Forms::Label^  label4;
 	private: System::Windows::Forms::Button^  button2;
+	private: System::Windows::Forms::Button^  button3;
+	private: System::Windows::Forms::RichTextBox^  richTextBox1;
 	protected:
 
 	private:
@@ -129,15 +148,17 @@ namespace CppWinForm1 {
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->label4 = (gcnew System::Windows::Forms::Label());
 			this->button2 = (gcnew System::Windows::Forms::Button());
+			this->button3 = (gcnew System::Windows::Forms::Button());
+			this->richTextBox1 = (gcnew System::Windows::Forms::RichTextBox());
 			this->SuspendLayout();
 			// 
 			// button1
 			// 
-			this->button1->Location = System::Drawing::Point(88, 116);
+			this->button1->Location = System::Drawing::Point(12, 116);
 			this->button1->Name = L"button1";
-			this->button1->Size = System::Drawing::Size(75, 23);
+			this->button1->Size = System::Drawing::Size(115, 23);
 			this->button1->TabIndex = 0;
-			this->button1->Text = L"Добавить";
+			this->button1->Text = L"Добавить заявку";
 			this->button1->UseVisualStyleBackColor = true;
 			this->button1->Click += gcnew System::EventHandler(this, &MyForm::button1_Click);
 			// 
@@ -207,19 +228,40 @@ namespace CppWinForm1 {
 			// 
 			// button2
 			// 
-			this->button2->Location = System::Drawing::Point(88, 161);
+			this->button2->Location = System::Drawing::Point(142, 116);
 			this->button2->Name = L"button2";
-			this->button2->Size = System::Drawing::Size(75, 23);
+			this->button2->Size = System::Drawing::Size(100, 23);
 			this->button2->TabIndex = 9;
-			this->button2->Text = L"button2";
+			this->button2->Text = L"Показать все";
 			this->button2->UseVisualStyleBackColor = true;
 			this->button2->Click += gcnew System::EventHandler(this, &MyForm::button2_Click);
+			// 
+			// button3
+			// 
+			this->button3->Location = System::Drawing::Point(12, 145);
+			this->button3->Name = L"button3";
+			this->button3->Size = System::Drawing::Size(230, 23);
+			this->button3->TabIndex = 10;
+			this->button3->Text = L"Поиск подходящего варианта";
+			this->button3->UseVisualStyleBackColor = true;
+			this->button3->Click += gcnew System::EventHandler(this, &MyForm::button3_Click);
+			// 
+			// richTextBox1
+			// 
+			this->richTextBox1->Location = System::Drawing::Point(12, 174);
+			this->richTextBox1->Name = L"richTextBox1";
+			this->richTextBox1->ReadOnly = true;
+			this->richTextBox1->Size = System::Drawing::Size(230, 96);
+			this->richTextBox1->TabIndex = 11;
+			this->richTextBox1->Text = L"";
 			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(284, 262);
+			this->ClientSize = System::Drawing::Size(284, 277);
+			this->Controls->Add(this->richTextBox1);
+			this->Controls->Add(this->button3);
 			this->Controls->Add(this->button2);
 			this->Controls->Add(this->label4);
 			this->Controls->Add(this->label3);
@@ -244,7 +286,7 @@ namespace CppWinForm1 {
 		if (r == NULL)
 			r = create(dobavlenieKv(int::Parse(textBox4->Text),int::Parse(textBox3->Text),double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)));
 		else
-			add(dobavlenieKv(2,2,32,"addres2"), r);
+			add(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), r);
 
 	};
 	private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
@@ -268,7 +310,14 @@ namespace CppWinForm1 {
 		}
 		r = pr;
 		for (i = 0; i<N; i++)
-			safeInFile(pKarta[i]);
+			safeInFile(pKarta[i], i+1);
+		richTextBox1->Text = "";
+		for each (std::string var in showAll())
+		{
+			richTextBox1->Text += marshal_as<System::String^>(var);
+		}
 	}
+private: System::Void button3_Click(System::Object^  sender, System::EventArgs^  e) {
+}
 };
 }
