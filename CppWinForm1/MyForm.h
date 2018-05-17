@@ -2,9 +2,66 @@
 #include <string>
 #include <fstream>
 #include "MyForm.h"
+#include <stdlib.h>
+#include "msclr\marshal_cppstd.h"
+#include <fstream>
+
+struct Kvartira
+{
+	int komnat;
+	int etag;
+	double ploshad;
+	std::string addres;
+};
+
+struct Spisok
+{
+	Kvartira *Kv;
+	Spisok *next;
+};
+
+Spisok *create(Kvartira *Kv)
+{
+	Spisok *r = new Spisok;
+	r->Kv = Kv;
+	r->next = NULL;
+	return r;
+};
+
+void add(Kvartira *Kv, Spisok *r) //добавление нового элемента списка
+{
+	while (r->next)
+		r = r->next;
+	r->next = new Spisok;
+	r->next->Kv = Kv;
+	r->next->next = NULL;
+};
+
+Kvartira *dobavlenieKv(int _komnat, int _etag, double _ploshad, std::string _addres)
+{
+	Kvartira *Karta = new Kvartira;
+	Karta->komnat = _komnat;
+	Karta->etag = _etag;
+	Karta->ploshad = _ploshad;
+	Karta->addres = _addres;
+	return Karta;
+}
+
+void safeInFile(Kvartira *Karta)
+{
+	std::ofstream f("test.txt", std::ios::app);
+	f << Karta->addres << '\n';
+	f << Karta->etag << '\n';
+	f << Karta->ploshad << '\n';
+	f << Karta->komnat << '\n';
+	f << "/" << '\n';
+	f.close();
+}
 
 namespace CppWinForm1 {
 
+	using namespace std;
+	using namespace msclr::interop;
 	using namespace System;
 	using namespace System::ComponentModel;
 	using namespace System::Collections;
@@ -46,6 +103,7 @@ namespace CppWinForm1 {
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::Label^  label3;
 	private: System::Windows::Forms::Label^  label4;
+	private: System::Windows::Forms::Button^  button2;
 	protected:
 
 	private:
@@ -70,6 +128,7 @@ namespace CppWinForm1 {
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->label4 = (gcnew System::Windows::Forms::Label());
+			this->button2 = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// button1
@@ -146,11 +205,22 @@ namespace CppWinForm1 {
 			this->label4->TabIndex = 8;
 			this->label4->Text = L"Количество комнат";
 			// 
+			// button2
+			// 
+			this->button2->Location = System::Drawing::Point(88, 161);
+			this->button2->Name = L"button2";
+			this->button2->Size = System::Drawing::Size(75, 23);
+			this->button2->TabIndex = 9;
+			this->button2->Text = L"button2";
+			this->button2->UseVisualStyleBackColor = true;
+			this->button2->Click += gcnew System::EventHandler(this, &MyForm::button2_Click);
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(284, 262);
+			this->Controls->Add(this->button2);
 			this->Controls->Add(this->label4);
 			this->Controls->Add(this->label3);
 			this->Controls->Add(this->label2);
@@ -167,9 +237,38 @@ namespace CppWinForm1 {
 
 		}
 #pragma endregion
-	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) 
-	{		
-		dobavlenieKarta(textBox1->Text, textBox2->Text, textBox3->Text, textBox4->Text);	
-	}
+		Spisok *r = NULL;
+
+	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e)
+	{
+		if (r == NULL)
+			r = create(dobavlenieKv(int::Parse(textBox4->Text),int::Parse(textBox3->Text),double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)));
+		else
+			add(dobavlenieKv(2,2,32,"addres2"), r);
+
 	};
+	private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
+		int i = 0;
+		int N = 0;
+
+		Spisok *pr = r;
+		while (r)
+		{
+			N++;
+			r = r->next;
+		}
+		Kvartira *buf;
+		Kvartira **pKarta = new Kvartira*[N];
+		r = pr;
+		while (r)
+		{
+			pKarta[i] = r->Kv;
+			r = r->next;
+			i++;
+		}
+		r = pr;
+		for (i = 0; i<N; i++)
+			safeInFile(pKarta[i]);
+	}
+};
 }
