@@ -7,6 +7,9 @@
 #include <fstream>
 #include <vector>
 
+int i = 0;
+int N = 0;
+
 struct Kvartira
 {
 	int komnat;
@@ -58,6 +61,30 @@ void safeInFile(Kvartira *Karta, int _nomer)
 	f << Karta->komnat << '\n';
 	f << "/" << '\n';
 	f.close();
+}
+
+Kvartira **prohodPoSkisku(Spisok *_r)
+{
+	::i = 0;
+	::N = 0;
+
+	Spisok *pr = _r;
+	while (_r)
+	{
+		N++;
+		_r = _r->next;
+	}
+	Kvartira *buf;
+	Kvartira **pKarta = new Kvartira*[N];
+	_r = pr;
+	while (_r)
+	{
+		pKarta[i] = _r->Kv;
+		_r = _r->next;
+		i++;
+	}
+	_r = pr;
+	return pKarta;
 }
 
 std::vector<std::string> showAll()
@@ -279,7 +306,8 @@ namespace CppWinForm1 {
 
 		}
 #pragma endregion
-		Spisok *r = NULL;
+
+	Spisok *r = NULL;
 
 	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e)
 	{
@@ -290,7 +318,7 @@ namespace CppWinForm1 {
 
 	};
 	private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
-		int i = 0;
+		/*int i = 0;
 		int N = 0;
 
 		Spisok *pr = r;
@@ -309,8 +337,9 @@ namespace CppWinForm1 {
 			i++;
 		}
 		r = pr;
+		*/
 		for (i = 0; i<N; i++)
-			safeInFile(pKarta[i], i+1);
+			safeInFile(prohodPoSkisku(r)[i], i+1);
 		richTextBox1->Text = "";
 		for each (std::string var in showAll())
 		{
