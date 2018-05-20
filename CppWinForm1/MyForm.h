@@ -7,8 +7,8 @@
 #include <fstream>
 #include <vector>
 
-int i = 0;
-int N = 0;
+int i;
+int N;
 
 struct Kvartira
 {
@@ -23,6 +23,8 @@ struct Spisok
 	Kvartira *Kv;
 	Spisok *next;
 };
+
+Spisok *r = NULL;
 
 Spisok *create(Kvartira *Kv)
 {
@@ -63,28 +65,28 @@ void safeInFile(Kvartira *Karta, int _nomer)
 	f.close();
 }
 
-Kvartira **prohodPoSkisku(Spisok *_r)
+Kvartira **prohodPoSkisku()
 {
 	::i = 0;
 	::N = 0;
 
-	Spisok *pr = _r;
-	while (_r)
+	Spisok *pr = ::r;
+	while (::r)
 	{
 		N++;
-		_r = _r->next;
+		::r = ::r->next;
 	}
 	Kvartira *buf;
-	Kvartira **pKarta = new Kvartira*[N];
-	_r = pr;
-	while (_r)
+	Kvartira **pKv = new Kvartira*[N];
+	::r = pr;
+	while (::r)
 	{
-		pKarta[i] = _r->Kv;
-		_r = _r->next;
+		pKv[i] = ::r->Kv;
+		::r = ::r->next;
 		i++;
 	}
-	_r = pr;
-	return pKarta;
+	::r = pr;
+	return pKv;
 }
 
 std::vector<std::string> showAll()
@@ -97,6 +99,28 @@ std::vector<std::string> showAll()
 		if (a != "/")
 			listKv.insert(listKv.end(), a);
 		listKv.insert(listKv.end(), "\n");
+	}
+	f.close();
+	return listKv;
+}
+
+std::vector<std::string> loadFromFile()
+{
+	std::string a;
+	std::vector<std::string> listKv;
+	std::ifstream f("test.txt");
+	while (getline(f, a))
+	{
+		if (a != "/")
+			listKv.insert(listKv.end(), a);
+		else
+		{
+			if (r == NULL)
+				r = create(dobavlenieKv(atoi(listKv[4].c_str()), atoi(listKv[3].c_str()), atof(listKv[2].c_str()), listKv[1].c_str()));			
+			else
+				add(dobavlenieKv(atoi(listKv[4].c_str()), atoi(listKv[3].c_str()), atof(listKv[2].c_str()), listKv[1].c_str()), r);
+			listKv.clear();
+		}
 	}
 	f.close();
 	return listKv;
@@ -301,23 +325,48 @@ namespace CppWinForm1 {
 			this->Controls->Add(this->button1);
 			this->Name = L"MyForm";
 			this->Text = L"MyForm";
+			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
 		}
 #pragma endregion
 
-	Spisok *r = NULL;
+	//Spisok *r = NULL;
 
 	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e)
 	{
 		if (r == NULL)
-			r = create(dobavlenieKv(int::Parse(textBox4->Text),int::Parse(textBox3->Text),double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)));
-		else
-			add(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), r);
+		{
+			r = create(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)));
+			safeInFile(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), 1);
+			MessageBox::Show("Заявка успешно добавлена");
+		}
+		else {
+			Kvartira **pKarta = prohodPoSkisku();
+			bool flag = false;
+
+			for (::i = 0; ::i < ::N; ::i++)
+			{
+				if (pKarta[::i]->addres == marshal_as<std::string>(textBox1->Text))
+				{
+					flag = true;
+					MessageBox::Show("Такая заявка уже есть");
+					break;
+				}
+			}
+
+			if (!flag)
+			{
+				add(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), r);
+				safeInFile(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), ::i + 1);
+				MessageBox::Show("Заявка успешно добавлена");
+			}
+		}
 
 	};
-	private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
+	private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) 
+	{
 		/*int i = 0;
 		int N = 0;
 
@@ -338,8 +387,10 @@ namespace CppWinForm1 {
 		}
 		r = pr;
 		*/
-		for (i = 0; i<N; i++)
-			safeInFile(prohodPoSkisku(r)[i], i+1);
+		/*Kvartira **pKarta = prohodPoSkisku();
+		for (::i = 0; ::i<::N; i++)
+			safeInFile(pKarta[::i], ::i+1);*/
+
 		richTextBox1->Text = "";
 		for each (std::string var in showAll())
 		{
@@ -347,6 +398,13 @@ namespace CppWinForm1 {
 		}
 	}
 private: System::Void button3_Click(System::Object^  sender, System::EventArgs^  e) {
+}
+private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e) {
+	for each (std::string var in showAll())
+	{
+		richTextBox1->Text += marshal_as<System::String^>(var);
+	}
+	loadFromFile();
 }
 };
 }
