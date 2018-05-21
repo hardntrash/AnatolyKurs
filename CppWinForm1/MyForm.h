@@ -6,6 +6,7 @@
 #include "msclr\marshal_cppstd.h"
 #include <fstream>
 #include <vector>
+#include <windows.h> 
 
 int i;
 int N;
@@ -324,7 +325,7 @@ namespace CppWinForm1 {
 			this->Controls->Add(this->textBox1);
 			this->Controls->Add(this->button1);
 			this->Name = L"MyForm";
-			this->Text = L"MyForm";
+			this->Text = L"Картотека";
 			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
 			this->ResumeLayout(false);
 			this->PerformLayout();
@@ -336,34 +337,38 @@ namespace CppWinForm1 {
 
 	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e)
 	{
-		if (r == NULL)
+		if (textBox1->Text != "" &&textBox2->Text != "" && textBox3->Text != "" && textBox4->Text != "")
 		{
-			r = create(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)));
-			safeInFile(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), 1);
-			MessageBox::Show("Заявка успешно добавлена");
-		}
-		else {
-			Kvartira **pKarta = prohodPoSkisku();
-			bool flag = false;
-
-			for (::i = 0; ::i < ::N; ::i++)
+			if (r == NULL)
 			{
-				if (pKarta[::i]->addres == marshal_as<std::string>(textBox1->Text))
-				{
-					flag = true;
-					MessageBox::Show("Такая заявка уже есть");
-					break;
-				}
-			}
-
-			if (!flag)
-			{
-				add(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), r);
-				safeInFile(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), ::i + 1);
+				r = create(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)));
+				safeInFile(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), 1);
 				MessageBox::Show("Заявка успешно добавлена");
 			}
-		}
+			else {
+				Kvartira **pKarta = prohodPoSkisku();
+				bool flag = false;
 
+				for (::i = 0; ::i < ::N; ::i++)
+				{
+					if (pKarta[::i]->addres == marshal_as<std::string>(textBox1->Text))
+					{
+						flag = true;
+						MessageBox::Show("Такая заявка уже есть");
+						break;
+					}
+				}
+
+				if (!flag)
+				{
+					add(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), r);
+					safeInFile(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), ::i + 1);
+					MessageBox::Show("Заявка успешно добавлена");
+				}
+			}
+		}
+		else
+			MessageBox::Show("Не все поля заполнены");
 	};
 	private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) 
 	{
@@ -398,6 +403,46 @@ namespace CppWinForm1 {
 		}
 	}
 private: System::Void button3_Click(System::Object^  sender, System::EventArgs^  e) {
+	if (textBox2->Text != "" && textBox3->Text != "" && textBox4->Text != "")
+	{
+		Kvartira **pKarta = prohodPoSkisku();
+		for (::i = 0; ::i < ::N; ::i++)
+		{
+			if (pKarta[::i]->etag == int::Parse(textBox3->Text) && pKarta[::i]->komnat == int::Parse(textBox4->Text))
+			{
+				Kvartira *var = pKarta[::i];
+				std::string s("Найден вариант для обмена. Адрес: ");
+				s += pKarta[::i]->addres;
+				s += "\nПринять обмен?";
+				if (MessageBox::Show(marshal_as<System::String^>(s), "Результат поиска", MessageBoxButtons::YesNo) == System::Windows::Forms::DialogResult::Yes)
+				{
+					r = NULL;
+					System::IO::File::Delete("test.txt");
+					for (::i = 0; ::i < ::N - 1; ::i++)
+					{
+						if (pKarta[::i] != var)
+						{
+							if (r == NULL)
+							{
+								r = create(pKarta[::i]);
+								safeInFile(pKarta[::i], ::i + 1);
+							}
+							else
+							{
+								add(dobavlenieKv(int::Parse(textBox4->Text), int::Parse(textBox3->Text), double::Parse(textBox2->Text), marshal_as<std::string>(textBox1->Text)), r);
+								safeInFile(pKarta[::i], ::i + 1);
+							}
+						}
+					}
+				}
+				loadFromFile();
+				break;
+			}
+		}
+		MessageBox::Show("Не подходящих вариантов.");
+	}
+	else
+		MessageBox::Show("Не все поля заполнены.");
 }
 private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e) {
 	for each (std::string var in showAll())
