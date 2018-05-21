@@ -227,6 +227,7 @@ namespace CppWinForm1 {
 			this->textBox2->Name = L"textBox2";
 			this->textBox2->Size = System::Drawing::Size(100, 20);
 			this->textBox2->TabIndex = 2;
+			this->textBox2->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &MyForm::textBox2_KeyPress);
 			// 
 			// textBox3
 			// 
@@ -234,6 +235,7 @@ namespace CppWinForm1 {
 			this->textBox3->Name = L"textBox3";
 			this->textBox3->Size = System::Drawing::Size(100, 20);
 			this->textBox3->TabIndex = 3;
+			this->textBox3->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &MyForm::textBox3_KeyPress);
 			// 
 			// textBox4
 			// 
@@ -241,6 +243,7 @@ namespace CppWinForm1 {
 			this->textBox4->Name = L"textBox4";
 			this->textBox4->Size = System::Drawing::Size(100, 20);
 			this->textBox4->TabIndex = 4;
+			this->textBox4->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &MyForm::textBox4_KeyPress);
 			// 
 			// label1
 			// 
@@ -450,6 +453,31 @@ private: System::Void MyForm_Load(System::Object^  sender, System::EventArgs^  e
 		richTextBox1->Text += marshal_as<System::String^>(var);
 	}
 	loadFromFile();
+}
+private: System::Void textBox3_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e) {
+	if ((e->KeyChar < 48 || e->KeyChar > 57) && e->KeyChar != '\b')
+		e->Handled = true;
+}
+private: System::Void textBox4_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e) {
+	if ((e->KeyChar < 48 || e->KeyChar > 57) && e->KeyChar != '\b')
+		e->Handled = true;
+}
+private: System::Void textBox2_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e) {
+	if (e->KeyChar == '.' || e->KeyChar == ',')
+	{
+		e->KeyChar = ',';
+		if (textBox2->Text->IndexOf(',') != -1)
+		{
+			e->Handled = true;
+			return;
+		}
+	}
+
+	if (!Char::IsControl(e->KeyChar) && !Char::IsDigit(e->KeyChar) && e->KeyChar != ',')
+	{
+		e->Handled = true;
+		return;
+	}
 }
 };
 }
