@@ -175,6 +175,7 @@ namespace CppWinForm1 {
 	private: System::Windows::Forms::Button^  button2;
 	private: System::Windows::Forms::Button^  button3;
 	private: System::Windows::Forms::RichTextBox^  richTextBox1;
+
 	protected:
 
 	private:
@@ -408,6 +409,7 @@ namespace CppWinForm1 {
 private: System::Void button3_Click(System::Object^  sender, System::EventArgs^  e) {
 	if (textBox2->Text != "" && textBox3->Text != "" && textBox4->Text != "")
 	{
+		bool flag = false;
 		Kvartira **pKarta = prohodPoSkisku();
 		for (::i = 0; ::i < ::N; ::i++)
 		{
@@ -419,13 +421,14 @@ private: System::Void button3_Click(System::Object^  sender, System::EventArgs^ 
 				s += "\nПринять обмен?";
 				if (MessageBox::Show(marshal_as<System::String^>(s), "Результат поиска", MessageBoxButtons::YesNo) == System::Windows::Forms::DialogResult::Yes)
 				{
-					r = NULL;
+					flag = true;
+					::r = NULL;
 					System::IO::File::Delete("test.txt");
-					for (::i = 0; ::i < ::N - 1; ::i++)
+					for (::i = 0; ::i <= ::N - 1; ::i++)
 					{
 						if (pKarta[::i] != var)
 						{
-							if (r == NULL)
+							if (::r == NULL)
 							{
 								r = create(pKarta[::i]);
 								safeInFile(pKarta[::i], ::i + 1);
@@ -437,12 +440,16 @@ private: System::Void button3_Click(System::Object^  sender, System::EventArgs^ 
 							}
 						}
 					}
+					break;
 				}
-				loadFromFile();
-				break;
+				
+				//loadFromFile();
+				//break;
+				
 			}
 		}
-		MessageBox::Show("Не подходящих вариантов.");
+		if (!flag)
+			MessageBox::Show("Нет подходящих вариантов.");
 	}
 	else
 		MessageBox::Show("Не все поля заполнены.");
@@ -469,14 +476,14 @@ private: System::Void textBox2_KeyPress(System::Object^  sender, System::Windows
 		if (textBox2->Text->IndexOf(',') != -1)
 		{
 			e->Handled = true;
-			return;
+			//return;
 		}
 	}
 
 	if (!Char::IsControl(e->KeyChar) && !Char::IsDigit(e->KeyChar) && e->KeyChar != ',')
 	{
 		e->Handled = true;
-		return;
+		//return;
 	}
 }
 };
